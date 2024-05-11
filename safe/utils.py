@@ -180,7 +180,7 @@ def pick_credential(db: Database, name: Optional[str]) -> Optional[Credential]:
             click.echo('Pick another instead:\n')
 
         credentials = db.get_all()
-        picked_index = inquirer.rawlist(
+        picked_index = inquirer.fuzzy(
             message='Pick a credential',
             choices=[Choice(name=credential.name, value=i)
                      for i, credential in enumerate(credentials)]
