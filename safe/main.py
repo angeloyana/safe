@@ -1,9 +1,10 @@
 from typing import Optional
+import json
 import click
 from InquirerPy import inquirer
 from safe.auth import authenticate_user, create_pswd
 from safe.database import Database
-from safe.utils import CredentialNameValidator, ItemKeyValidator, print_credentials, print_status, pick_credential
+from safe.utils import CredentialNameValidator, ItemKeyValidator, DirnameExists, print_credentials, print_status, pick_credential
 
 
 @click.group(chain=True)
@@ -209,3 +210,29 @@ def change_password_command(db: Database):
 
     db.change_pswd(new_pswd)
     print_status('Password was safely changed.\n', 'success')
+
+
+@cli.command('export')
+@click.argument('output', type=DirnameExists(), required=True)
+@click.pass_obj
+def export_command(db: Database, output: str):
+    """Export all credential as json file."""
+    if db.count == 0:
+        click.echo('Database is empty!')
+        click.echo('Try adding credential by running:')
+        click.secho('  safe add\n', bold=True)
+        return
+
+    print_status('Converting to json.')
+    credentials = db.get_all()
+    parsed_creds = list(map(
+        lambda c: {'name': c.name, 'items': c.items_dict},
+        credentials
+    ))
+
+    print_status('Writing to output file.')
+    with open(output, 'w') as f:
+        json.dump(parsed_creds, f, indent=2)
+
+    click.echo(f'\nCredentials has been exported to:')
+    click.secho(output, bold=True, underline=True)

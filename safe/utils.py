@@ -1,4 +1,5 @@
 from typing import Any, Callable, Dict, List, Optional
+import os
 import click
 from InquirerPy import inquirer
 from InquirerPy.base.control import Choice
@@ -78,6 +79,16 @@ class ItemKeyValidator(Validator):
                 message=f'Must add atleast 1 key-value pair.',
                 cursor_position=document.cursor_position
             )
+
+
+class DirnameExists(click.ParamType):
+    name = 'dirname_exists'
+
+    def convert(self, value, param, ctx):
+        dirname = os.path.dirname(value)
+        if not os.path.isdir(dirname):
+            self.fail('Path does not exists.', param, ctx)
+        return value
 
 
 def print_status(
